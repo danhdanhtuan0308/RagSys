@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Recommend for User</title>
+    <style>
+      body { font-family: sans-serif; padding: 2rem; }
+      form { margin-bottom: 1rem; }
+      input { margin-left: 0.5rem; margin-right: 1rem; }
+      button { padding: 0.25rem 1rem; }
+      .error { color: red; }
+      ul { list-style: none; padding: 0; }
+      li { margin: 0.25rem 0; }
+    </style>
+  </head>
+  <body>
+    <h1>Get Recommendations</h1>
+    <form method="post">
+      <label>User ID:
+        <input type="text" name="user_id" required style="width:300px;"
+               value="{{ user_id or '' }}">
+      </label>
+      <label>Top K:
+        <input type="number" name="top_k" value="10" min="1" max="100">
+      </label>
+      <button type="submit">Recommend</button>
+    </form>
+
+    {% if error %}
+      <p class="error">Error: {{ error }}</p>
+    {% endif %}
+
+    {% if recs %}
+      <h2>Recommendations for {{ user_id }}:</h2>
+      <ul>
+        {% for r in recs %}
+          <li><strong>{{ r.item_id }}</strong> — probability of relevance:  {{ "%.3f"|format(r.score) }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </body>
+</html>
