@@ -27,4 +27,6 @@ datasets
 tiktoken 
 sentencepiece
 bitsandbytes
+sqlalchemy 
+psycopg2-binary
 #conda install -c conda-forge faiss-cpu

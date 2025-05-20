@@ -5,11 +5,19 @@ import logging
 import re
 import string
 from datetime import datetime
+from sqlalchemy import create_engine
+import json
+
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Function to extract text from a list and remove emojis
 
+engine = create_engine(f"postgresql+psycopg2://daniellai:admin@localhost:5432/postgres")
+logging.info("Connect successfully to PostGreSQLDB")
+
+
+#Pre-processing
 def extract_text(lst):
     if isinstance(lst, list) and len(lst) > 0:
         text = ' '.join([str(item).strip() for item in lst])
@@ -40,12 +48,9 @@ def preprocess_text(text):
     return ' '.join(text.split())
 
 # Read reviews file
-file = "/Users/daniellai/MSDS_2026/MSDS_2024_2026/Spring_2025/Projects/dataset/raw/CDs_and_Vinyl.jsonl"
-data = []
-with open(file, 'r') as fp:
-    for line in fp:
-        data.append(json.loads(line))
-df_reviews = pd.DataFrame(data)
+logging.info("Connecting to PostGRESQL for interaction ...")
+with engine.connect() as conn:
+    df_reviews = pd.read_sql("SELECT * FROM interaction;", conn)
 
 # Drop unneeded columns in reviews
 df_reviews = df_reviews.drop(columns=['images', 'asin'], axis=1)
@@ -57,20 +62,18 @@ if df_reviews["timestamp"].dtype != "datetime64[ns]":
 
 # Drop unneeded columns and sort
 # Note: sentiment analysis columns have been removed per request
-df_reviews = df_reviews.drop(columns=['helpful_vote','title','text'], axis=1)
+df_reviews = df_reviews.drop(columns=['helpful_vote','title','text','index'], axis=1)
 df_reviews = df_reviews.sort_values('timestamp')
 df_reviews.to_parquet("/Users/daniellai/MSDS_2026/MSDS_2024_2026/Spring_2025/Projects/dataset/preprocess/reviews_CD.parquet", index=False)
 logging.info("Saved reviews_CD.parquet successfully.")
 
 # Read meta file
-file_meta = "/Users/daniellai/MSDS_2026/MSDS_2024_2026/Spring_2025/Projects/dataset/raw/meta_CDs_and_Vinyl.jsonl"
-data_meta = []
-with open(file_meta, 'r') as fp:
-    for line in fp:
-        data_meta.append(json.loads(line))
-df_meta = pd.DataFrame(data_meta)
+logging.info("Connecting to PostGRESQL for metadata...")
+with engine.connect() as conn:
+    df_meta = pd.read_sql("SELECT * FROM metadata;", conn)
+logging.info("Successfully collecting data")
 
-
+logging.info("Processing data...")
 bins   = [-np.inf, 1.5, 2, 3, 4, 4.8, np.inf]
 labels = ["Very Bad","Bad","Medium","Above Medium","Good","Excellent"]
 
@@ -99,7 +102,6 @@ df_meta = df_meta.drop(columns=[
     'details','images','features','videos','bought_together','price','subtitle','author','average_rating','store','rating_number','description','categories'
 ], axis=1)
 
-logging.info("Preprocessing metadata ...")
 for col in ['description','categories']:
     if col in df_meta.columns:
         df_meta[col] = df_meta[col].apply(extract_text)
