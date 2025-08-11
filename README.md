@@ -1,4 +1,5 @@
 # Product Recommendation
 
 A hybrid recommendation system using retrieval and rank for product recommendations  
-<img width="1258" height="872" alt="image" src="https://github.com/user-attachments/assets/6a07d6eb-094f-4448-bf8c-f745d17f4f76" />
+<img width="1172" height="844" alt="image" src="https://github.com/user-attachments/assets/8f578274-7573-449f-9035-4322f2e2bc7d" />
+
